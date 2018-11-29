@@ -1525,8 +1525,10 @@ var starViewer = {
     this.scene.add(panoMesh); // Added Orbit Controls camera
 
     if (isMobile()) {
-      this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["DeviceOrientationControls"](this.camera, this.renderer.domElement);
+      console.log("on phone");
+      this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["DeviceOrientationControls"](this.camera);
     } else {
+      console.log("on desktop");
       this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["OrbitControls"](this.camera, this.renderer.domElement);
     } // this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
 
