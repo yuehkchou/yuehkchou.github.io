@@ -1524,7 +1524,13 @@ var starViewer = {
     var panoMesh = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["Mesh"](sphereGeo, panoMat);
     this.scene.add(panoMesh); // Added Orbit Controls camera
 
-    this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["OrbitControls"](this.camera, this.renderer.domElement);
+    if (isMobile()) {
+      this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["OrbitControls"](this.camera, this.renderer.domElement);
+    } else {
+      this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["DeviceOrientationControls"](this.camera, this.renderer.domElement);
+    } // this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+
+
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.25;
     this.controls.enableZoom = false;
@@ -1735,9 +1741,10 @@ var modalCreater = {
         close: function close() {
           item.style.visibility = 'hidden';
           item.style.opacity = "0";
-          overlay.style.display = 'none';
-          item.style.right = this.pos.x;
-          item.style.top = this.pos.y;
+          overlay.style.display = 'none'; // item.style.right = this.pos.x;
+          // item.style.top = this.pos.y;
+
+          item.classList.remove("active");
           setTimeout(function () {
             console.log('1');
             aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_2__["refresh"](true);
@@ -1747,9 +1754,10 @@ var modalCreater = {
           console.log("open");
           item.style.visibility = 'visible';
           item.style.opacity = "1";
-          overlay.style.display = 'block';
-          item.style.right = endPos.x;
-          item.style.top = endPos.y;
+          overlay.style.display = 'block'; // item.style.right = endPos.x;
+          // item.style.top = endPos.y;
+
+          item.classList.add("active");
           setTimeout(function () {
             console.log('1');
             aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_2__["refresh"](true);
@@ -1763,6 +1771,15 @@ modalCreater.onReady();
 $('.portfolio-image-container').on('scroll', function () {
   aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_2__["refresh"](true);
 });
+
+function isMobile() {
+  if (navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/webOS/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i) || navigator.userAgent.match(/BlackBerry/i) || navigator.userAgent.match(/Windows Phone/i)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 window.addEventListener('resize', function () {
   starViewer.onResize();
 }, false);
