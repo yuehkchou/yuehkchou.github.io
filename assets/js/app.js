@@ -27717,6 +27717,98 @@ module.exports = function (module) {
 
 /***/ }),
 
+/***/ "./src/assets/js/DeviceOrientationControls.js":
+/*!****************************************************!*\
+  !*** ./src/assets/js/DeviceOrientationControls.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author richt / http://richt.me
+ * @author WestLangley / http://github.com/WestLangley
+ *
+ * W3C Device Orientation control (http://w3c.github.io/deviceorientation/spec-source-orientation.html)
+ */
+var THREE = __webpack_require__(/*! ./three.min.js */ "./src/assets/js/three.min.js");
+
+THREE.DeviceOrientationControls = function (object) {
+  var scope = this;
+  this.object = object;
+  this.object.rotation.reorder('YXZ');
+  this.enabled = true;
+  this.deviceOrientation = {};
+  this.screenOrientation = 0;
+  this.alphaOffset = 0; // radians
+
+  var onDeviceOrientationChangeEvent = function onDeviceOrientationChangeEvent(event) {
+    scope.deviceOrientation = event;
+  };
+
+  var onScreenOrientationChangeEvent = function onScreenOrientationChangeEvent() {
+    scope.screenOrientation = window.orientation || 0;
+  }; // The angles alpha, beta and gamma form a set of intrinsic Tait-Bryan angles of type Z-X'-Y''
+
+
+  var setObjectQuaternion = function () {
+    var zee = new THREE.Vector3(0, 0, 1);
+    var euler = new THREE.Euler();
+    var q0 = new THREE.Quaternion();
+    var q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)); // - PI/2 around the x-axis
+
+    return function (quaternion, alpha, beta, gamma, orient) {
+      euler.set(beta, alpha, -gamma, 'YXZ'); // 'ZXY' for the device, but 'YXZ' for us
+
+      quaternion.setFromEuler(euler); // orient the device
+
+      quaternion.multiply(q1); // camera looks out the back of the device, not the top
+
+      quaternion.multiply(q0.setFromAxisAngle(zee, -orient)); // adjust for screen orientation
+    };
+  }();
+
+  this.connect = function () {
+    onScreenOrientationChangeEvent(); // run once on load
+
+    window.addEventListener('orientationchange', onScreenOrientationChangeEvent, false);
+    window.addEventListener('deviceorientation', onDeviceOrientationChangeEvent, false);
+    scope.enabled = true;
+  };
+
+  this.disconnect = function () {
+    window.removeEventListener('orientationchange', onScreenOrientationChangeEvent, false);
+    window.removeEventListener('deviceorientation', onDeviceOrientationChangeEvent, false);
+    scope.enabled = false;
+  };
+
+  this.update = function () {
+    if (scope.enabled === false) return;
+    var device = scope.deviceOrientation;
+
+    if (device) {
+      var alpha = device.alpha ? THREE.Math.degToRad(device.alpha) + scope.alphaOffset : 0; // Z
+
+      var beta = device.beta ? THREE.Math.degToRad(device.beta) : 0; // X'
+
+      var gamma = device.gamma ? THREE.Math.degToRad(device.gamma) : 0; // Y''
+
+      var orient = scope.screenOrientation ? THREE.Math.degToRad(scope.screenOrientation) : 0; // O
+
+      setObjectQuaternion(scope.object.quaternion, alpha, beta, gamma, orient);
+    }
+  };
+
+  this.dispose = function () {
+    scope.disconnect();
+  };
+
+  this.connect();
+};
+
+module.exports = exports.default = THREE.DeviceOrientationControls;
+
+/***/ }),
+
 /***/ "./src/assets/js/OrbitControls.js":
 /*!****************************************!*\
   !*** ./src/assets/js/OrbitControls.js ***!
@@ -28556,8 +28648,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _three_min_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_three_min_js__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _OrbitControls_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./OrbitControls.js */ "./src/assets/js/OrbitControls.js");
 /* harmony import */ var _OrbitControls_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_OrbitControls_js__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! aos/dist/aos.js */ "./node_modules/aos/dist/aos.js");
-/* harmony import */ var aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _DeviceOrientationControls_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./DeviceOrientationControls.js */ "./src/assets/js/DeviceOrientationControls.js");
+/* harmony import */ var _DeviceOrientationControls_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_DeviceOrientationControls_js__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! aos/dist/aos.js */ "./node_modules/aos/dist/aos.js");
+/* harmony import */ var aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -28571,13 +28666,16 @@ var starViewer = {
   textlabels: [],
   onReady: function onReady() {
     this.scene = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["Scene"]();
-    this.renderer = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["WebGLRenderer"]();
+    this.renderer = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["WebGLRenderer"]({
+      antialias: true
+    });
     this.renderer.setClearColor(0x004477);
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.container.appendChild(this.renderer.domElement); // Set a close distance to hide close object
 
     this.camera = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["PerspectiveCamera"](40, window.innerWidth / window.innerHeight, 550, 10000);
+    this.mCamera = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["PerspectiveCamera"](75, window.innerWidth / window.innerHeight, 1, 1100);
     this.camera.position.set(0, 10, 400); /// Create geometry for panorama photo
 
     var sphereGeo = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["SphereBufferGeometry"](500, 70, 60); // invert geometry normal
@@ -28592,19 +28690,18 @@ var starViewer = {
 
     if (isMobile()) {
       console.log("on phone");
-      this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["DeviceOrientationControls"](this.camera, true);
+      this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["DeviceOrientationControls"](this.mCamera);
     } else {
       console.log("on desktop");
       this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["OrbitControls"](this.camera, this.renderer.domElement);
-    } // this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-
-
-    this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.25;
-    this.controls.enableZoom = false;
-    this.controls.enablePan = false;
-    this.controls.enableKeys = false; //// world
+      this.controls.enableDamping = true;
+      this.controls.dampingFactor = 0.25;
+      this.controls.enableZoom = false;
+      this.controls.enablePan = false;
+      this.controls.enableKeys = false;
+    } //// world
     // Create base mesh Cylinder geometry
+
 
     var geometry = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["SphereBufferGeometry"](0, 10, 30);
     var defaultMat = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["MeshBasicMaterial"]({
@@ -28815,7 +28912,7 @@ var modalCreater = {
           item.classList.remove("active");
           setTimeout(function () {
             console.log('1');
-            aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_2__["refresh"](true);
+            aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_3__["refresh"](true);
           }, 500);
         },
         open: function open() {
@@ -28828,7 +28925,7 @@ var modalCreater = {
           item.classList.add("active");
           setTimeout(function () {
             console.log('1');
-            aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_2__["refresh"](true);
+            aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_3__["refresh"](true);
           }, 500);
         }
       };
@@ -28837,7 +28934,7 @@ var modalCreater = {
 };
 modalCreater.onReady();
 $('.portfolio-image-container').on('scroll', function () {
-  aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_2__["refresh"](true);
+  aos_dist_aos_js__WEBPACK_IMPORTED_MODULE_3__["refresh"](true);
 });
 
 function isMobile() {
