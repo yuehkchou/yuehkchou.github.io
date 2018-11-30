@@ -1608,8 +1608,8 @@ var starViewer = {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.container.appendChild(this.renderer.domElement); // Set a close distance to hide close object
 
-    this.camera = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["PerspectiveCamera"](40, window.innerWidth / window.innerHeight, 550, 10000);
-    this.mCamera = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["PerspectiveCamera"](75, window.innerWidth / window.innerHeight, 1, 1100);
+    this.camera = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["PerspectiveCamera"](75, window.innerWidth / window.innerHeight, 1, 1100);
+    this.mCamera = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["PerspectiveCamera"](40, window.innerWidth / window.innerHeight, 1, 1100);
     this.camera.position.set(0, 10, 400); /// Create geometry for panorama photo
 
     var sphereGeo = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["SphereBufferGeometry"](500, 70, 60); // invert geometry normal
@@ -1624,7 +1624,7 @@ var starViewer = {
 
     if (isMobile()) {
       console.log("on phone");
-      this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["DeviceOrientationControls"](this.mCamera);
+      this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["DeviceOrientationControls"](this.camera);
     } else {
       console.log("on desktop");
       this.controls = new _three_min_js__WEBPACK_IMPORTED_MODULE_0__["OrbitControls"](this.camera, this.renderer.domElement);
