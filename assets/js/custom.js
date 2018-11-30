@@ -1717,7 +1717,7 @@ var starViewer = {
 
       _this.controls.update();
 
-      _this._render();
+      _this._render(_this.scene, _this.camera);
     };
 
     animate();
