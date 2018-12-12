@@ -1877,7 +1877,66 @@ function isMobile() {
   } else {
     return false;
   }
-}
+} // function loadPanorama() {
+//   document.getElementById('loader').style.visibility = 'none';
+//   document.getElementById("mainSite").style.visibility  = 'visible';
+// }
+
+
+var body = document.getElementsByTagName("body")[0];
+console.log("body");
+
+body.onload = function (event) {
+  console.log("LOADING", event.target);
+  console.log("LOADING", event);
+  var currentValue = 0;
+  var maxValue = 100;
+  var progressBar = document.getElementById('progress');
+  var xhttp = new XMLHttpRequest();
+  xhttp.addEventListener("progress", updateProgress, false);
+  xhttp.addEventListener("load", transferComplete, false);
+
+  function updateProgress(event) {
+    if (event.lengthComputable) {
+      var percentComplete = event.loaded / event.total;
+      console.log(percentComplete); // ...
+    } else {// Unable to compute progress information since the total size is unknown
+      }
+  }
+
+  function transferComplete(event) {
+    console.log("event loaded");
+  }
+
+  xhttp.open("GET", 'index.html');
+  var site = document.getElementById('mainSite');
+  var percent = currentValue / maxValue * 100;
+
+  if (percent > 100) {
+    percent = 100;
+  } else if (currentValue > maxValue) {
+    console.log('max');
+    return;
+  }
+}; // body.addEventListener("load", function() {
+//   console.log("LOADING");
+//   const progressBar = document.getElementById('progress');
+//   const xhttp = new XMLHttpRequest();
+//
+//   xhttp.open("GET", 'http://localhost:8000/index.html');
+//   if(xhttp.onload) {
+//     console.log('on load starts');
+//   }
+//   const site = document.getElementById('mainSite');
+//   let percent = currentValue / maxValue * 100;
+//   if(percent > 100) {
+//     percent = 100;
+//   } else if(currentValue > max) {
+//     console.log('max');
+//     return;
+//   }
+// });
+
 
 window.addEventListener('resize', function () {
   starViewer.onResize();
